@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArCon Structures</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+        }
+        
+        #pdf-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        canvas {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin-bottom: 2px; /* Adds a tiny seamless gap between pages */
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+</head>
+<body>
+    
+    <div id="pdf-container"></div>
+
+    <script>
+        const pdfUrl = "ArCon.pdf";
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        async function renderPDF(url) {
+            try {
+                const pdf = await pdfjsLib.getDocument(url).promise;
+                const container = document.getElementById('pdf-container');
+                
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    const page = await pdf.getPage(pageNum);
+                    const viewport = page.getViewport({ scale: 2.0 }); 
+                    
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    container.appendChild(canvas);
+                    
+                    await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+                }
+            } catch (error) {
+                console.error('Error loading the PDF:', error);
+                document.getElementById('pdf-container').innerHTML = '<p style="text-align:center; padding: 20px;">Ensure you are using Live Server to view this file.</p>';
+            }
+        }
+
+        renderPDF(pdfUrl);
+    </script>
+</body>
+</html>
